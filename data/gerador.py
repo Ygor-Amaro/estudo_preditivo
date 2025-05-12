@@ -13,8 +13,33 @@ random.seed(65432)  # Para reprodutibilidade
 with open("data/input/dados.json", "r", encoding="utf-8") as file:
     dados = json.load(file)
 
-cursos = list(dados["CURSOS"].keys())
-pesos = list(dados["CURSOS"].values())
+# Função para calcular a soma dos pesos em cada nível
+def calcular_pesos(dados):
+    cursos = []
+    pesos = []
+
+    for curso, locais in dados["CURSOS"].items():
+        peso_curso = 0  # Soma dos pesos do curso
+        for local, modalidades in locais.items():
+            peso_local = 0  # Soma dos pesos do local
+            for modalidade, turnos in modalidades.items():
+                peso_modalidade = 0  # Soma dos pesos da modalidade
+                if isinstance(turnos, dict):  # Verifica se turnos é um dicionário
+                    for turno, peso in turnos.items():
+                        if isinstance(peso, (int, float)):  # Verifica se o peso é numérico
+                            # Adiciona o curso completo à lista
+                            cursos.append(f"{curso} - {local} - {modalidade} - {turno}")
+                            pesos.append(peso)
+                            peso_modalidade += peso  # Soma o peso do turno
+                # Adiciona o peso da modalidade ao local
+                peso_local += peso_modalidade
+            # Adiciona o peso do local ao curso
+            peso_curso += peso_local
+        # Opcional: você pode armazenar os pesos calculados para cada curso, local ou modalidade
+    return cursos, pesos
+
+# Calculando os cursos e pesos
+cursos, pesos = calcular_pesos(dados)
 
 # Geração de dados fictícios com porcentagens ajustadas
 data = {
