@@ -1,14 +1,25 @@
 import pandas as pd
 import random
 import numpy as np
+import json
+import os
+
 
 # Configurações para geração de dados
 num_rows = 60000  # Número de linhas de dados fictícios
 random.seed(65432)  # Para reprodutibilidade
 
+# Carregando os pesos de cursos a partir do JSON
+with open("data/input/dados.json", "r", encoding="utf-8") as file:
+    dados = json.load(file)
+
+cursos = list(dados["CURSOS"].keys())
+pesos = list(dados["CURSOS"].values())
+
 # Geração de dados fictícios com porcentagens ajustadas
 data = {
     "RM": [f"CUST-{i:05d}" for i in range(1, num_rows + 1)],
+    "CURSOS": random.choices(cursos, weights=pesos, k=num_rows),
     "ATIVO/EVADIDO": random.choices(
         ["Ativo", "Evadido", "Formado"], 
         weights=[0.78606, 0.14413, 0.06981], k=num_rows),
@@ -26,37 +37,15 @@ data = {
         weights=[0.00008, 0.22421, 0.18466, 0.15668, 0.13278, 0.08074, 0.06665, 0.06046, 0.05988, 0.01458, 0.01928], k=num_rows),
     "SEXO": random.choices(
         ["F", "M", "Sem identificação"], 
-        weights=[0.69950, 0.29213, 0.00837], k=num_rows),
-    "MultipleLines": random.choices(["Yes", "No", "No phone service"], weights=[40, 50, 10], k=num_rows),
-    "InternetService": random.choices(["DSL", "Fiber optic", "No"], weights=[35, 50, 15], k=num_rows),
-    "OnlineSecurity": random.choices(["Yes", "No", "No internet service"], weights=[25, 60, 15], k=num_rows),
-    "OnlineBackup": random.choices(["Yes", "No", "No internet service"], weights=[30, 55, 15], k=num_rows),
-    "DeviceProtection": random.choices(["Yes", "No", "No internet service"], weights=[28, 57, 15], k=num_rows),
-    "TechSupport": random.choices(["Yes", "No", "No internet service"], weights=[20, 65, 15], k=num_rows),
-    "StreamingTV": random.choices(["Yes", "No", "No internet service"], weights=[40, 45, 15], k=num_rows),
-    "StreamingMovies": random.choices(["Yes", "No", "No internet service"], weights=[42, 43, 15], k=num_rows),
-    "Contract": random.choices(["Month-to-month", "One year", "Two year"], weights=[55, 25, 20], k=num_rows),
-    "PaperlessBilling": random.choices(["Yes", "No"], weights=[60, 40], k=num_rows),
-    "PaymentMethod": random.choices(
-        ["Electronic check", "Mailed check", "Bank transfer (automatic)", "Credit card (automatic)"],
-        weights=[35, 20, 25, 20],
-        k=num_rows,
-    ),
-    "MonthlyCharges": np.round(np.random.uniform(18.25, 118.75, num_rows), 2),
-    "TotalCharges": lambda: np.round(
-        np.random.uniform(18.25, 8684.8, num_rows), 2
-    ),
-    "Churn": random.choices(["Yes", "No"], weights=[27, 73], k=num_rows),  # 27% de churn
+        weights=[0.69950, 0.29213, 0.00837], k=num_rows)
 }
 
 # Criando o DataFrame
 df = pd.DataFrame(data)
 
-# Corrigindo TotalCharges para clientes com tenure = 0
-df.loc[df["tenure"] == 0, "TotalCharges"] = 0
-
-# Salvando os dados em um arquivo CSV
-output_file = "dados_ficticios.csv"
+# Salvando os dados em um arquivo CSV na pasta data/output
+output_file = "data/output/dados_ficticios.csv"
+os.makedirs(os.path.dirname(output_file), exist_ok=True)  # Garante que o diretório exista
 df.to_csv(output_file, index=False)
 
 print(f"Arquivo '{output_file}' gerado com sucesso!")
