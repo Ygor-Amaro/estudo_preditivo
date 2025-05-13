@@ -1,7 +1,5 @@
 import os
 import pandas as pd
-import numpy as np
-
 
 # Construindo o caminho absoluto para o arquivo:
 base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -16,19 +14,23 @@ dados = pd.read_csv(caminho, encoding='utf-8')
 
 # Função para criar a coluna 'Churn'
 def create_coluna_churn(df: pd.DataFrame) -> pd.DataFrame:
+    # Padronizando os nomes das colunas para maiúsculas
+    df.columns = df.columns.str.upper()
+    
     if 'ATIVO/EVADIDO' not in df.columns:
-        raise KeyError("A coluna 'ativo/evadido' não foi encontrada no DataFrame.")
+        raise KeyError("A coluna 'ATIVO/EVADIDO' não foi encontrada no DataFrame.")
+    
+    # Mapeando os valores da coluna
     status_map = {
         'ATIVO': 1,
         'EVADIDO': 0,
     }
-    df['CHURN'] = df['ATIVO/EVADIDO'].map(status_map)
+    # Aplicando o mapeamento e preenchendo valores não mapeados com -1
+    df['CHURN'] = df['ATIVO/EVADIDO'].map(status_map).fillna(-1)
     return df
 
 # Aplicando as transformações
 dados = create_coluna_churn(dados)
 
 # Exibindo as primeiras linhas do DataFrame transformado
-# Contando quantas vezes "ARQUITETURA E URBANISMO" aparece na coluna "CURSOS"
-arquitetura = dados.query('CURSOS = "ARQUITETURA E URBANISMO"').head()
-arquitetura
+print(dados.head())
