@@ -42,15 +42,17 @@ def calcular_pesos(dados):
 cursos, pesos = calcular_pesos(dados)
 
 # Geração de dados fictícios com porcentagens ajustadas
+cursos_selecionados = random.choices(cursos, weights=pesos, k=num_rows)  # Seleciona cursos com base nos pesos
+
 data = {
     "RM": [f"CUST-{i:05d}" for i in range(1, num_rows + 1)],
-    "CURSOS": random.choices(cursos, weights=pesos, k=num_rows),  # Usa os pesos calculados
+    "CURSOS": [curso.split(" - ")[0] for curso in cursos_selecionados],  # Extrai apenas o nome do curso
+    "FILIAL": [curso.split(" - ")[1] for curso in cursos_selecionados],  # Extrai a filial
+    "SEGMENTO": [curso.split(" - ")[2] for curso in cursos_selecionados],  # Extrai o segmento
+    "TURNO": [curso.split(" - ")[3] for curso in cursos_selecionados],  # Extrai o turno
     "ATIVO/EVADIDO": random.choices(
         ["Ativo", "Evadido", "Formado"], 
         weights=[0.78606, 0.14413, 0.06981], k=num_rows),
-    "TURNO": [curso.split(" - ")[-1] for curso in random.choices(cursos, weights=pesos, k=num_rows)],  # Extrai o turno do curso
-    "SEGMENTO": [curso.split(" - ")[-2] for curso in random.choices(cursos, weights=pesos, k=num_rows)],  # Extrai o segmento
-    "FILIAL": [curso.split(" - ")[-3] for curso in random.choices(cursos, weights=pesos, k=num_rows)],  # Extrai a filial
     "PERIODO": random.choices(
         [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 
         weights=[0.00008, 0.22421, 0.18466, 0.15668, 0.13278, 0.08074, 0.06665, 0.06046, 0.05988, 0.01458, 0.01928], k=num_rows),
