@@ -30,5 +30,5 @@ dados = create_coluna_churn(dados)
 
 # Exibindo as primeiras linhas do DataFrame transformado
 # Contando quantas vezes "ARQUITETURA E URBANISMO" aparece na coluna "CURSOS"
-arquitetura = len(dados[dados['CURSOS'] == 'ARQUITETURA E URBANISMO'])
-print(arquitetura)
+arquitetura = dados.query('CURSOS = "ARQUITETURA E URBANISMO"').head()
+arquitetura
