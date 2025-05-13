@@ -4,6 +4,20 @@ import numpy as np
 import json
 import os
 
+"""
+Script para geração de dados fictícios baseados em pesos extraídos de um arquivo JSON.
+
+Este script realiza as seguintes etapas:
+1. Carrega os dados de um arquivo JSON contendo informações sobre cursos, filiais, segmentos e turnos.
+2. Calcula os pesos para cada combinação de curso, filial, segmento e turno.
+3. Gera dados fictícios com base nos pesos calculados.
+4. Salva os dados gerados em um arquivo CSV.
+
+Configurações:
+- Número de linhas de dados fictícios gerados: 60.000
+- Arquivo de entrada: data/input/dados.json
+- Arquivo de saída: data/output/dados_ficticios.csv
+"""
 
 # Configurações para geração de dados
 num_rows = 60000  # Número de linhas de dados fictícios
@@ -13,8 +27,18 @@ random.seed(65432)  # Para reprodutibilidade
 with open("data/input/dados.json", "r", encoding="utf-8") as file:
     dados = json.load(file)
 
-# Função para calcular a soma dos pesos em cada nível
 def calcular_pesos(dados):
+    """
+    Calcula os pesos para cada combinação de curso, filial, segmento e turno.
+
+    Args:
+        dados (dict): Dados carregados do arquivo JSON.
+
+    Returns:
+        tuple: Uma tupla contendo:
+            - cursos (list): Lista de combinações no formato "Curso - Filial - Segmento - Turno".
+            - pesos (list): Lista de pesos correspondentes a cada combinação.
+    """
     cursos = []
     pesos = []
 
@@ -35,7 +59,6 @@ def calcular_pesos(dados):
                 peso_filial += peso_segmento
             # Adiciona o peso da filial ao curso
             peso_curso += peso_filial
-        # Opcional: você pode armazenar os pesos calculados para cada curso, filial ou segmento
     return cursos, pesos
 
 # Calculando os cursos e pesos

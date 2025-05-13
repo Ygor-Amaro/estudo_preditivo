@@ -177,3 +177,5 @@ pyrightconfig.json
 
 #dados criados
 dados_ficticios.csv
+data/output/dados_ficticios.csv
+data/input/dados.json
