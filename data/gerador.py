@@ -1,8 +1,8 @@
-import pandas as pd
-import random
-import numpy as np
 import json
 import os
+import random
+import pandas as pd
+import numpy as np
 
 """
 Script para geração de dados fictícios baseados em pesos extraídos de um arquivo JSON.
