@@ -16,17 +16,19 @@ dados = pd.read_csv(caminho, encoding='utf-8')
 
 # Função para criar a coluna 'Churn'
 def create_coluna_churn(df: pd.DataFrame) -> pd.DataFrame:
-    if 'ativo/evadido' not in df.columns:
+    if 'ATIVO/EVADIDO' not in df.columns:
         raise KeyError("A coluna 'ativo/evadido' não foi encontrada no DataFrame.")
     status_map = {
-        'Ativo': 1,
-        'Evadido': 0,
+        'ATIVO': 1,
+        'EVADIDO': 0,
     }
-    df['churn'] = df['ativo/evadido'].map(status_map)
+    df['CHURN'] = df['ATIVO/EVADIDO'].map(status_map)
     return df
 
 # Aplicando as transformações
 dados = create_coluna_churn(dados)
 
 # Exibindo as primeiras linhas do DataFrame transformado
-print(dados.head())
+# Contando quantas vezes "ARQUITETURA E URBANISMO" aparece na coluna "CURSOS"
+arquitetura = len(dados[dados['CURSOS'] == 'ARQUITETURA E URBANISMO'])
+print(arquitetura)
