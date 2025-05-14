@@ -20,13 +20,12 @@ def create_coluna_churn(df: pd.DataFrame) -> pd.DataFrame:
     if 'ATIVO/EVADIDO' not in df.columns:
         raise KeyError("A coluna 'ATIVO/EVADIDO' não foi encontrada no DataFrame.")
     
-    # Mapeando os valores da coluna
+    # Padronizando os valores para maiúsculas
     status_map = {
         'ATIVO': 1,
         'EVADIDO': 0,
     }
-    # Aplicando o mapeamento e preenchendo valores não mapeados com -1
-    df['CHURN'] = df['ATIVO/EVADIDO'].map(status_map).fillna(-1)
+    df['CHURN'] = df['ATIVO/EVADIDO'].str.upper().map(status_map).fillna(-1)
     return df
 
 # Aplicando as transformações
