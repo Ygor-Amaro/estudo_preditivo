@@ -32,4 +32,5 @@ def create_coluna_churn(df: pd.DataFrame) -> pd.DataFrame:
 dados = create_coluna_churn(dados)
 
 # Exibindo as primeiras linhas do DataFrame transformado
-print(dados.head())
+if __name__ == "__main__":
+    print(dados.head())
