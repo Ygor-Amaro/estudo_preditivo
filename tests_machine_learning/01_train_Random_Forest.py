@@ -1,5 +1,6 @@
 import sys
 import os
+# Adiciona o diretório 'src' ao sys.path para importar módulos locais
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
 from estudo_preditivo.transform_csv import dados
 
@@ -13,32 +14,33 @@ from sklearn.metrics import classification_report, roc_auc_score
 from imblearn.over_sampling import SMOTE
 from imblearn.pipeline import Pipeline as ImbPipeline  # Pipeline especial para SMOTE
 
-SEED = 18498
+SEED = 18498  # Semente para reprodutibilidade
 
+# Seleção de features e target
 X = dados[['CURSOS', 'FILIAL', 'SEGMENTO', 'TURNO', 'PERIODO', 'SEXO']]
 Y = dados['CHURN']
 
 cat_cols = ['CURSOS', 'FILIAL', 'SEGMENTO', 'TURNO', 'PERIODO', 'SEXO']
 
-# Split dos dados
+# Split dos dados em treino e teste, mantendo a proporção das classes
 X_train, X_test, y_train, y_test = train_test_split(X, Y, 
                                                     test_size=0.2, 
                                                     random_state=SEED, 
                                                     stratify=Y)
 
-# Pré-processamento
+# Pré-processamento: OneHotEncoder para variáveis categóricas
 preprocessor = ColumnTransformer([
     ('cat', OneHotEncoder(handle_unknown='ignore'), cat_cols)
 ])
 
-# Pipeline com SMOTE
+# Pipeline com pré-processamento, SMOTE e RandomForest
 pipeline = ImbPipeline([
     ('prep', preprocessor),
     ('smote', SMOTE(random_state=SEED)),  # Etapa de oversampling
-    ('clf', RandomForestClassifier(random_state=SEED))  # Removido class_weight
+    ('clf', RandomForestClassifier(random_state=SEED))  # Classificador
 ])
 
-# Parâmetros para GridSearch
+# Parâmetros para busca em grade (GridSearch)
 param_grid = {
     'clf__n_estimators': [50, 100, 200],
     'clf__max_depth': [3, 5, 7],
@@ -46,10 +48,10 @@ param_grid = {
     'smote__k_neighbors': [3, 5]
 }
 
-# Validação cruzada
+# Validação cruzada estratificada
 cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=SEED)
 
-# Configuração do GridSearch
+# Configuração do GridSearchCV
 grid = GridSearchCV(
     estimator=pipeline,
     param_grid=param_grid,
@@ -58,17 +60,22 @@ grid = GridSearchCV(
     n_jobs=-1  # Paraleliza o processamento
 )
 
-# Treinamento
+# Treinamento do modelo com busca de hiperparâmetros
 grid.fit(X_train, y_train)  # Deve vir antes das métricas!
 
-# Avaliação
+# Avaliação dos melhores parâmetros e desempenho em validação cruzada
 print(f'\nMelhores parâmetros: {grid.best_params_}')
 print(f'Melhor AUC (CV): {grid.best_score_:.3f}')
 
-# Métricas no teste
+# Avaliação no conjunto de teste
 y_proba = grid.best_estimator_.predict_proba(X_test)[:, 1]
 y_pred = grid.best_estimator_.predict(X_test)
 
 print(f'\nAUC-ROC no teste: {roc_auc_score(y_test, y_proba):.3f}')
 print('\nRelatório Completo:')
 print(classification_report(y_test, y_pred, target_names=['Não Evadido', 'Evadido']))
+
+"""
+Script para treinamento e avaliação de um modelo Random Forest com SMOTE para detecção de evasão (churn).
+Inclui pipeline de pré-processamento, oversampling, busca de hiperparâmetros e avaliação de métricas.
+"""
