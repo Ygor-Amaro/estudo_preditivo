@@ -19,7 +19,7 @@ Configurações:
 """
 
 # Configurações para geração de dados
-num_rows = 80000  # Número de linhas de dados fictícios
+num_rows = 60000  # Número de linhas de dados fictícios
 random.seed(65432)  # Para reprodutibilidade
 
 # Carregando os pesos de cursos a partir do JSON
