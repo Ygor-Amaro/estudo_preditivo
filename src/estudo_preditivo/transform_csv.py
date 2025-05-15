@@ -22,8 +22,8 @@ def create_coluna_churn(df: pd.DataFrame) -> pd.DataFrame:
     
     # Padronizando os valores para maiúsculas
     status_map = {
-        'ATIVO': 1,
-        'EVADIDO': 0,
+        'ATIVO': 0,
+        'EVADIDO': 1,
     }
     df['CHURN'] = df['ATIVO/EVADIDO'].str.upper().map(status_map).fillna(-1)
     return df
@@ -33,4 +33,4 @@ dados = create_coluna_churn(dados)
 
 # Exibindo as primeiras linhas do DataFrame transformado
 if __name__ == "__main__":
-    print(dados.head())
+    print(f" - Proporção de churn (evadidos):{round(dados['CHURN'].mean() * 100, 3)}%")
