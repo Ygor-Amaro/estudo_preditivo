@@ -9,7 +9,7 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import train_test_split, GridSearchCV, StratifiedKFold
-from sklearn.metrics import classification_report, roc_auc_score, precision_recall_curve
+from sklearn.metrics import classification_report, roc_auc_score, precision_recall_curve, f1_score
 
 from imblearn.over_sampling import SMOTE
 from imblearn.pipeline import Pipeline as ImbPipeline  # Pipeline especial para SMOTE
@@ -49,11 +49,10 @@ pipeline = ImbPipeline([
 
 # Parâmetros para busca em grade (GridSearch)
 param_grid = {
-    'clf__n_estimators': [50, 100, 200],
-    'clf__max_depth': [3, 5, 7],
-    'clf__class_weight': ['balanced', {0: 1, 1: 5}],
+    'clf__n_estimators': [100, 200],
+    'clf__max_depth': [5, 10, None],
+    'clf__class_weight': [None, 'balanced'],
     'smote__sampling_strategy': [0.3, 0.5],
-    'smote__k_neighbors': [3, 5]
 }
 
 # Validação cruzada estratificada
@@ -90,6 +89,14 @@ optimal_threshold = thresholds[recall[:-1] == max(recall[:-1])][0]
 y_pred_optimized = (y_proba >= optimal_threshold).astype(int)
 print('\nRelatório com threshold otimizado para máximo recall:')
 print(classification_report(y_test, y_pred_optimized, target_names=['Não Evadido', 'Evadido']))
+
+# --- Otimização do threshold para maximizar F1-score ---
+f1_scores = 2 * (precision * recall) / (precision + recall + 1e-6)
+best_threshold = thresholds[f1_scores[:-1].argmax()]
+
+y_pred_f1 = (y_proba >= best_threshold).astype(int)
+print('\nRelatório com threshold otimizado para máximo F1-score:')
+print(classification_report(y_test, y_pred_f1, target_names=['Não Evadido', 'Evadido']))
 
 """
 Script para treinamento e avaliação de um modelo Random Forest com SMOTE para detecção de evasão (churn).
