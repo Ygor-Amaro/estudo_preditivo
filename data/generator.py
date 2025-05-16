@@ -7,8 +7,8 @@ import pandas as pd
 Script para geração de dados fictícios baseados em pesos extraídos de um arquivo JSON.
 
 Este script realiza as seguintes etapas:
-1. Carrega os dados de um arquivo JSON contendo informações sobre cursos, filiais, segmentos e turnos.
-2. Calcula os pesos para cada combinação de curso, filial, segmento e turno.
+1. Carrega os dados de um arquivo JSON contendo informações sobre cursos, filiais, segmentos, turnos e períodos.
+2. Calcula os pesos para cada combinação de curso, filial, segmento, turno e período.
 3. Gera dados fictícios com base nos pesos calculados.
 4. Salva os dados gerados em um arquivo CSV.
 
@@ -26,34 +26,37 @@ random.seed(65432)  # Para reprodutibilidade
 with open("data/input/dados.json", "r", encoding="utf-8") as file:
     dados = json.load(file)
 
-# Função para extrair todas as combinações possíveis e seus pesos de ATIVOS/EVADIDOS
+# Função para extrair todas as combinações possíveis e seus pesos de ATIVOS/EVADIDOS, incluindo PERÍODO
 def extrair_combinacoes(dados):
     combinacoes = []
     for curso, filiais in dados["CURSOS"].items():
         for filial, modalidades in filiais.items():
             for modalidade, turnos in modalidades.items():
-                for turno, churns in turnos.items():
-                    if isinstance(churns, dict):
-                        ativos = churns.get("ATIVOS", 0)
-                        evadidos = churns.get("EVADIDOS", 0)
-                        if ativos > 0:
-                            combinacoes.append({
-                                "CURSOS": curso,
-                                "FILIAL": filial,
-                                "SEGMENTO": modalidade,
-                                "TURNO": turno,
-                                "ATIVO/EVADIDO": "Ativo",
-                                "peso": ativos
-                            })
-                        if evadidos > 0:
-                            combinacoes.append({
-                                "CURSOS": curso,
-                                "FILIAL": filial,
-                                "SEGMENTO": modalidade,
-                                "TURNO": turno,
-                                "ATIVO/EVADIDO": "Evadido",
-                                "peso": evadidos
-                            })
+                for turno, periodos in turnos.items():
+                    for periodo, churns in periodos.items():
+                        if isinstance(churns, dict):
+                            ativos = churns.get("ATIVOS", 0)
+                            evadidos = churns.get("EVADIDOS", 0)
+                            if ativos > 0:
+                                combinacoes.append({
+                                    "CURSOS": curso,
+                                    "FILIAL": filial,
+                                    "SEGMENTO": modalidade,
+                                    "TURNO": turno,
+                                    "PERIODO": int(periodo) if periodo.isdigit() else periodo,
+                                    "ATIVO/EVADIDO": "Ativo",
+                                    "peso": ativos
+                                })
+                            if evadidos > 0:
+                                combinacoes.append({
+                                    "CURSOS": curso,
+                                    "FILIAL": filial,
+                                    "SEGMENTO": modalidade,
+                                    "TURNO": turno,
+                                    "PERIODO": int(periodo) if periodo.isdigit() else periodo,
+                                    "ATIVO/EVADIDO": "Evadido",
+                                    "peso": evadidos
+                                })
     return combinacoes
 
 # Extrai todas as combinações possíveis
@@ -66,6 +69,7 @@ labels = [
         c["FILIAL"],
         c["SEGMENTO"],
         c["TURNO"],
+        c["PERIODO"],
         c["ATIVO/EVADIDO"]
     )
     for c in combinacoes
@@ -75,12 +79,7 @@ pesos = [c["peso"] for c in combinacoes]
 # Gera as linhas de acordo com os pesos de cada combinação
 selecionados = random.choices(labels, weights=pesos, k=num_rows)
 
-# Gera os outros campos aleatórios
-periodos = random.choices(
-    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-    weights=[0.00009, 0.23017, 0.020066, 0.17031, 0.12036, 0.08609, 0.07039, 0.06572, 0.03364, 0.01585, 0.00673],
-    k=num_rows
-)
+# Gera o campo SEXO aleatório
 sexos = random.choices(
     ["F", "M", "Sem identificação"],
     weights=[0.69640, 0.29512, 0.00847],
@@ -94,8 +93,8 @@ data = {
     "FILIAL": [s[1] for s in selecionados],
     "SEGMENTO": [s[2] for s in selecionados],
     "TURNO": [s[3] for s in selecionados],
-    "ATIVO/EVADIDO": [s[4] for s in selecionados],
-    "PERIODO": periodos,
+    "PERIODO": [s[4] for s in selecionados],
+    "ATIVO/EVADIDO": [s[5] for s in selecionados],
     "SEXO": sexos
 }
 
