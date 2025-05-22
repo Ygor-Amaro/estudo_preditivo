@@ -49,7 +49,7 @@ pipeline = ImbPipeline([
 
 # Parâmetros para busca em grade (GridSearch)
 param_grid = {
-    'clf__n_estimators': [100, 200],
+    'clf__n_estimators': [50, 100],
     'clf__max_depth': [5, 10, None],
     'clf__class_weight': [None, 'balanced'],
     'smote__sampling_strategy': [0.3, 0.5],
@@ -89,14 +89,6 @@ optimal_threshold = thresholds[recall[:-1] == max(recall[:-1])][0]
 y_pred_optimized = (y_proba >= optimal_threshold).astype(int)
 print('\nRelatório com threshold otimizado para máximo recall:')
 print(classification_report(y_test, y_pred_optimized, target_names=['Não Evadido', 'Evadido']))
-
-# --- Otimização do threshold para maximizar F1-score ---
-f1_scores = 2 * (precision * recall) / (precision + recall + 1e-6)
-best_threshold = thresholds[f1_scores[:-1].argmax()]
-
-y_pred_f1 = (y_proba >= best_threshold).astype(int)
-print('\nRelatório com threshold otimizado para máximo F1-score:')
-print(classification_report(y_test, y_pred_f1, target_names=['Não Evadido', 'Evadido']))
 
 """
 Script para treinamento e avaliação de um modelo Random Forest com SMOTE para detecção de evasão (churn).
