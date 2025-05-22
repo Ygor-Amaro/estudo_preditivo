@@ -1,22 +1,23 @@
-import sys
 import os
+import sys
+
 import joblib
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 
 # Caminho para importar os dados locais
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
-from estudo_preditivo.transform_csv import dados
-
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.compose import ColumnTransformer
-from sklearn.model_selection import train_test_split, GridSearchCV, StratifiedKFold
-from sklearn.metrics import classification_report, roc_auc_score, f1_score
-
 from imblearn.over_sampling import SMOTE
 from imblearn.pipeline import Pipeline as ImbPipeline
+from sklearn.compose import ColumnTransformer
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, f1_score, roc_auc_score
+from sklearn.model_selection import (GridSearchCV, StratifiedKFold,
+                                     train_test_split)
+from sklearn.preprocessing import OneHotEncoder
+
+from estudo_preditivo.transform_csv import dados
 
 SEED = 18498
 
