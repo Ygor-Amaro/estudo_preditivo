@@ -1,5 +1,6 @@
 import sys
 import os
+import joblib
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -100,3 +101,14 @@ plt.show()
 y_pred_opt = (y_proba >= best_threshold).astype(int)
 print(f"\nMelhor threshold pelo F1-score: {best_threshold:.2f} (F1 = {best_f1:.3f})\n")
 print(classification_report(y_test, y_pred_opt, target_names=['Não Evadido', 'Evadido']))
+
+# Agrupar o modelo e o threshold ótimo em um dicionário
+objeto_exportacao = {
+    "modelo": grid.best_estimator_,
+    "threshold": best_threshold
+}
+
+# Exportar para arquivo .pkl
+joblib.dump(objeto_exportacao, "modelo_churn_rf.pkl")
+
+print("✅ Modelo salvo como 'modelo_churn_rf.pkl'")
