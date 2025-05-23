@@ -4,6 +4,8 @@ import pandas as pd
 from typing import List
 import chardet
 
+path = os.path.abspath(os.path.dirname(__file__))
+
 def detect_encoding(file_path):
     with open(file_path, 'rb') as f:
         result = chardet.detect(f.read())
@@ -25,7 +27,7 @@ def extract_csv_files(path: str) -> List[pd.DataFrame]:
             # Detecta a codificação do arquivo
             encoding = detect_encoding(file)
             # Carrega o arquivo CSV com a codificação detectada
-            df = pd.read_csv(file, sep=",", encoding=encoding, on_bad_lines='skip')
+            df = pd.read_csv(file, sep=";", encoding=encoding, on_bad_lines='skip')
             dataframe_list.append(df)
         except Exception as e:
             print(f"Erro ao carregar o arquivo {file}: {e}")
@@ -35,9 +37,3 @@ def extract_csv_files(path: str) -> List[pd.DataFrame]:
         raise ValueError("Nenhum arquivo CSV foi carregado com sucesso.")
     
     return dataframe_list
-
-# Caminho para os arquivos CSV
-path_1 = os.path.abspath("TOTVS/data/input/Alunos")
-
-# Extração dos arquivos CSV
-Lista_csv_Alunos = extract_csv_files(path_1)
