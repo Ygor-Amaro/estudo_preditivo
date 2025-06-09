@@ -7,14 +7,19 @@ import numpy as np
 import pandas as pd
 
 # Caminho para importar os dados locais
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
+sys.path.append(
+    os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src'))
+)
 from imblearn.over_sampling import SMOTE
 from imblearn.pipeline import Pipeline as ImbPipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, f1_score, roc_auc_score
-from sklearn.model_selection import (GridSearchCV, StratifiedKFold,
-                                     train_test_split)
+from sklearn.model_selection import (
+    GridSearchCV,
+    StratifiedKFold,
+    train_test_split,
+)
 from sklearn.preprocessing import OneHotEncoder
 
 from estudo_preditivo.transform_csv import dados
@@ -31,15 +36,20 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 # 2. Pré-processamento + Pipeline com SMOTE + RF
-preprocessor = ColumnTransformer([
-    ('cat', OneHotEncoder(handle_unknown='ignore'), cat_cols)
-])
+preprocessor = ColumnTransformer(
+    [('cat', OneHotEncoder(handle_unknown='ignore'), cat_cols)]
+)
 
-pipeline = ImbPipeline([
-    ('prep', preprocessor),
-    ('smote', SMOTE(sampling_strategy=0.5, k_neighbors=3, random_state=SEED)),
-    ('clf', RandomForestClassifier(random_state=SEED))
-])
+pipeline = ImbPipeline(
+    [
+        ('prep', preprocessor),
+        (
+            'smote',
+            SMOTE(sampling_strategy=0.5, k_neighbors=3, random_state=SEED),
+        ),
+        ('clf', RandomForestClassifier(random_state=SEED)),
+    ]
+)
 
 param_grid = {
     'clf__n_estimators': [50, 100],
@@ -55,7 +65,7 @@ grid = GridSearchCV(
     param_grid=param_grid,
     scoring='roc_auc',
     cv=cv,
-    n_jobs=-1
+    n_jobs=-1,
 )
 
 # 3. Treinamento
@@ -76,20 +86,34 @@ def prever_com_threshold(modelo, dados, threshold):
     probas = modelo.predict_proba(dados)[:, 1]
     return (probas >= threshold).astype(int)
 
+
 # 7. Avaliação com threshold ótimo
-y_pred_otimo = prever_com_threshold(grid.best_estimator_, X_test, best_threshold)
+y_pred_otimo = prever_com_threshold(
+    grid.best_estimator_, X_test, best_threshold
+)
 
 # 8. Resultados
 print(f'\n✅ Melhor combinação de hiperparâmetros: {grid.best_params_}')
-print(f'\n🎯 Melhor threshold pelo F1: {best_threshold:.2f} (F1 = {best_f1:.3f})')
+print(
+    f'\n🎯 Melhor threshold pelo F1: {best_threshold:.2f} (F1 = {best_f1:.3f})'
+)
 print(f'\n📈 AUC-ROC no teste: {roc_auc_score(y_test, y_proba):.3f}')
 print('\n📊 Relatório com threshold otimizado:')
-print(classification_report(y_test, y_pred_otimo, target_names=['Não Evadido', 'Evadido']))
+print(
+    classification_report(
+        y_test, y_pred_otimo, target_names=['Não Evadido', 'Evadido']
+    )
+)
 
 # 9. Plot F1 por threshold
 plt.figure(figsize=(10, 5))
 plt.plot(thresholds, f1_scores, label='F1-score', color='blue')
-plt.axvline(best_threshold, linestyle='--', color='red', label=f'Melhor threshold = {best_threshold:.2f}')
+plt.axvline(
+    best_threshold,
+    linestyle='--',
+    color='red',
+    label=f'Melhor threshold = {best_threshold:.2f}',
+)
 plt.title('F1-score por Threshold')
 plt.xlabel('Threshold')
 plt.ylabel('F1-score')
@@ -100,16 +124,22 @@ plt.show()
 
 # Avaliação com threshold otimizado
 y_pred_opt = (y_proba >= best_threshold).astype(int)
-print(f"\nMelhor threshold pelo F1-score: {best_threshold:.2f} (F1 = {best_f1:.3f})\n")
-print(classification_report(y_test, y_pred_opt, target_names=['Não Evadido', 'Evadido']))
+print(
+    f'\nMelhor threshold pelo F1-score: {best_threshold:.2f} (F1 = {best_f1:.3f})\n'
+)
+print(
+    classification_report(
+        y_test, y_pred_opt, target_names=['Não Evadido', 'Evadido']
+    )
+)
 
 # Agrupar o modelo e o threshold ótimo em um dicionário
 objeto_exportacao = {
-    "modelo": grid.best_estimator_,
-    "threshold": best_threshold
+    'modelo': grid.best_estimator_,
+    'threshold': best_threshold,
 }
 
 # Exportar para arquivo .pkl
-joblib.dump(objeto_exportacao, "modelo_churn_rf.pkl")
+joblib.dump(objeto_exportacao, 'modelo_churn_rf.pkl')
 
 print("✅ Modelo salvo como 'modelo_churn_rf.pkl'")

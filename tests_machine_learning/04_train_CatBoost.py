@@ -1,13 +1,22 @@
-import sys
-import os
-import numpy as np
-import joblib
 import logging
+import os
+import sys
+
+import joblib
+import numpy as np
 from catboost import CatBoostClassifier
-from sklearn.metrics import classification_report, roc_auc_score, f1_score, confusion_matrix, precision_recall_curve, auc, matthews_corrcoef
+from matplotlib import pyplot as plt
+from sklearn.metrics import (
+    auc,
+    classification_report,
+    confusion_matrix,
+    f1_score,
+    matthews_corrcoef,
+    precision_recall_curve,
+    roc_auc_score,
+)
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OrdinalEncoder
-from matplotlib import pyplot as plt
 
 # Configuração de logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
@@ -16,13 +25,25 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
 SEED = 18498
 
 # Caminho para importar os dados locais
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
+sys.path.append(
+    os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src'))
+)
 from estudo_preditivo.transform_csv import dados
 
 # 1. Validação dos dados
-required_columns = ['CURSOS', 'FILIAL', 'SEGMENTO', 'TURNO', 'PERIODO', 'SEXO', 'CHURN']
+required_columns = [
+    'CURSOS',
+    'FILIAL',
+    'SEGMENTO',
+    'TURNO',
+    'PERIODO',
+    'SEXO',
+    'CHURN',
+]
 if not all(col in dados.columns for col in required_columns):
-    raise ValueError(f"O arquivo de dados deve conter as colunas: {required_columns}")
+    raise ValueError(
+        f'O arquivo de dados deve conter as colunas: {required_columns}'
+    )
 
 # 2. Dados e divisão
 X = dados[['CURSOS', 'FILIAL', 'SEGMENTO', 'TURNO', 'PERIODO', 'SEXO']]
@@ -43,7 +64,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 class_weights = [1, len(y_train) / sum(y_train)]
 
 # 3. Treinamento do modelo CatBoost com class_weights
-logging.info("Iniciando o treinamento...")
+logging.info('Iniciando o treinamento...')
 model = CatBoostClassifier(
     iterations=200,
     depth=10,
@@ -53,16 +74,13 @@ model = CatBoostClassifier(
     random_seed=SEED,
     verbose=100,
     cat_features=cat_cols,
-    class_weights=class_weights  # Penaliza mais os erros da classe minoritária
+    class_weights=class_weights,  # Penaliza mais os erros da classe minoritária
 )
 
 model.fit(
-    X_train,
-    y_train,
-    eval_set=(X_test, y_test),
-    early_stopping_rounds=30
+    X_train, y_train, eval_set=(X_test, y_test), early_stopping_rounds=30
 )
-logging.info("Treinamento concluído.")
+logging.info('Treinamento concluído.')
 
 # 4. Avaliação
 y_proba = model.predict_proba(X_test)[:, 1]
@@ -72,33 +90,48 @@ best_idx = np.argmax(f1_scores)
 best_threshold = thresholds[best_idx]
 best_f1 = f1_scores[best_idx]
 
+
 def prever_com_threshold(modelo, dados, threshold):
     proba = modelo.predict_proba(dados)[:, 1]
     return (proba >= threshold).astype(int)
+
 
 y_pred_otimo = prever_com_threshold(model, X_test, best_threshold)
 
 # 5. Métricas complementares
 precision, recall, _ = precision_recall_curve(y_test, y_proba)
 pr_auc = auc(recall, precision)  # Área sob a curva de precisão-recall
-mcc = matthews_corrcoef(y_test, y_pred_otimo)  # Matthew Correlation Coefficient
+mcc = matthews_corrcoef(
+    y_test, y_pred_otimo
+)  # Matthew Correlation Coefficient
 
-logging.info(f"Melhor threshold pelo F1-score: {best_threshold:.2f} (F1 = {best_f1:.3f})")
-logging.info(f"AUC-ROC no teste: {roc_auc_score(y_test, y_proba):.3f}")
-logging.info(f"PR AUC no teste: {pr_auc:.3f}")
-logging.info(f"MCC no teste: {mcc:.3f}")
+logging.info(
+    f'Melhor threshold pelo F1-score: {best_threshold:.2f} (F1 = {best_f1:.3f})'
+)
+logging.info(f'AUC-ROC no teste: {roc_auc_score(y_test, y_proba):.3f}')
+logging.info(f'PR AUC no teste: {pr_auc:.3f}')
+logging.info(f'MCC no teste: {mcc:.3f}')
 
-print("\n📊 Relatório final:")
-print(classification_report(y_test, y_pred_otimo, target_names=['Não Evadido', 'Evadido']))
-print("\nMatriz de Confusão:")
+print('\n📊 Relatório final:')
+print(
+    classification_report(
+        y_test, y_pred_otimo, target_names=['Não Evadido', 'Evadido']
+    )
+)
+print('\nMatriz de Confusão:')
 print(confusion_matrix(y_test, y_pred_otimo))
-print(f"\nPR AUC: {pr_auc:.3f}")
-print(f"MCC: {mcc:.3f}")
+print(f'\nPR AUC: {pr_auc:.3f}')
+print(f'MCC: {mcc:.3f}')
 
 # 6. Curva F1
 plt.figure(figsize=(10, 5))
 plt.plot(thresholds, f1_scores, label='F1-score', color='green')
-plt.axvline(best_threshold, linestyle='--', color='red', label=f'Threshold ótimo = {best_threshold:.2f}')
+plt.axvline(
+    best_threshold,
+    linestyle='--',
+    color='red',
+    label=f'Threshold ótimo = {best_threshold:.2f}',
+)
 plt.title('F1-score por Threshold (CatBoost)')
 plt.xlabel('Threshold')
 plt.ylabel('F1-score')
@@ -119,11 +152,8 @@ plt.tight_layout()
 plt.show()
 
 # 8. Exportar modelo + threshold
-output_path = "modelo_churn_catboost.pkl"
+output_path = 'modelo_churn_catboost.pkl'
 os.makedirs(os.path.dirname(output_path), exist_ok=True)
-joblib.dump({
-    "modelo": model,
-    "threshold": best_threshold
-}, output_path)
+joblib.dump({'modelo': model, 'threshold': best_threshold}, output_path)
 
 logging.info(f"Modelo CatBoost salvo como '{output_path}'")

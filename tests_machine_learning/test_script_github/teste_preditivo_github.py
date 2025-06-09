@@ -20,20 +20,33 @@ from imblearn.under_sampling import RandomUnderSampler
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.impute import SimpleImputer
+
 # Classificadores - Algoritmos de Machine Learning
 from sklearn.linear_model import LogisticRegression
+
 # Métricas e Visualização
 from sklearn.metrics import classification_report, confusion_matrix
+
 # Otimização dos hiperparâmetros
 # Treino e teste
-from sklearn.model_selection import (GridSearchCV, KFold, cross_val_score,
-                                     train_test_split)
+from sklearn.model_selection import (
+    GridSearchCV,
+    KFold,
+    cross_val_score,
+    train_test_split,
+)
 from sklearn.neural_network import MLPClassifier
+
 # Pipeline
 from sklearn.pipeline import Pipeline
+
 # Padronização, balanceamento e tratamentos
-from sklearn.preprocessing import (LabelEncoder, MinMaxScaler, OneHotEncoder,
-                                   StandardScaler)
+from sklearn.preprocessing import (
+    LabelEncoder,
+    MinMaxScaler,
+    OneHotEncoder,
+    StandardScaler,
+)
 
 simplefilter(action='ignore', category=FutureWarning)
 
